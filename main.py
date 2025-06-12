@@ -117,6 +117,27 @@ def hhelp(inputs):
 
     usage(program)
 
+def subnet_mask_short_to_long(inputs):
+    assert len(inputs) >= 1, "This should be handled at subcommand argument parsing!"
+
+    subnet_mask_short = inputs.pop(0)
+
+    v = subnet_mask_short.removeprefix("/")
+
+    try:
+        v = int(v)
+    except Exception as e:
+        logger.error(f"{e}")
+        exit(1)
+
+    if v < 0 or v > 32:
+        logger.error("subnet mask should be between 0 ~ 32!")
+        exit(1)
+
+    subnet_mask_short = v
+
+    logger.info(f"SUBNET_MASK_SHORT: {subnet_mask_short}")
+
 class Subcommand:
     def __init__(self, name: str, inputs: List[str], description: str, func, param_count: ParamCount):
         self.name = name
@@ -133,7 +154,7 @@ class Subcommand:
 
 subcommands = { "subnet_hosts_count": Subcommand("subnet_hosts_count", ["subnet_mask"], "Calculates available hosts per subnet given short-hand subnet mask. eg: /24", subnet_mask_short2hosts_per_subnet, ParamCount(ParamCountType.EXACT, 1)),
                "test_atleast": Subcommand("test_atleast", ["arg1", "arg2"], "For testing the ParamCount.ATLEAST parsing.", None, ParamCount(ParamCountType.ATLEAST, 2)),
-               "help": Subcommand("help", [], "Help.", hhelp, ParamCount(ParamCountType.ATLEAST, 0)),
+               "subnet_mask_short_to_long": Subcommand("subnet_mask_short_to_long", [ "subnet_mask_short" ], "Convert short form of a subnet mask to the long form.", subnet_mask_short_to_long, ParamCount(ParamCountType.EXACT, 1)), "help": Subcommand("help", [], "Help.", hhelp, ParamCount(ParamCountType.ATLEAST, 0)),
                }
 
 def usage(program: str):
@@ -172,7 +193,7 @@ def main():
                 if subcmd.param_count.v != len(sys.argv):
                     logger.error(f"Subcommand `{arg}` wanted {subcmd.param_count} argument(s), but got {subcmd_input_count} argument(s)!")
                     exit(1)
-                logger.info(f"param_count.v after parsing subcommand inputs: {subcmd.param_count.v}")
+                # logger.info(f"param_count.v after parsing subcommand inputs: {subcmd.param_count.v}")
             elif subcmd.param_count._type == ParamCountType.ATLEAST:
                 if subcmd.param_count.v != 0:
                     logger.error(f"Subcommand `{arg}` wanted {subcmd.param_count} argument(s), but got {subcmd_input_count} argument(s)!")
