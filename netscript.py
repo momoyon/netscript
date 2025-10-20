@@ -134,9 +134,24 @@ def subnet_mask_short_to_long(inputs):
         logger.error("subnet mask should be between 0 ~ 32!")
         exit(1)
 
+    if v == 0:
+        logger.info(f"SUBNET_MASK_LONG:  0.0.0.0")
+        return
+
+    subnet_mask_long = 0
     subnet_mask_short = v
 
-    logger.info(f"SUBNET_MASK_SHORT: {subnet_mask_short}")
+    for i in range(subnet_mask_short+1):
+        subnet_mask_long = subnet_mask_long | (1 << (32 - i))
+
+    l = subnet_mask_long
+    oct1 = (l >> 8*3) & 0xFF
+    oct2 = (l >> 8*2) & 0xFF
+    oct3 = (l >> 8*1) & 0xFF
+    oct4 = (l >> 8*0) & 0xFF
+
+    logger.info(f"SUBNET_MASK_SHORT: /{subnet_mask_short}")
+    logger.info(f"SUBNET_MASK_LONG:  {oct1}.{oct2}.{oct3}.{oct4} ({subnet_mask_long})")
 
 class Subcommand:
     def __init__(self, name: str, inputs: List[str], description: str, func, param_count: ParamCount):
