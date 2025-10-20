@@ -197,7 +197,29 @@ def subnet_mask_short_to_long(inputs):
 def subnet_mask_long_to_short(inputs):
     assert len(inputs) >= 1, "This should be handled at subcommand argument parsing!"
 
-    long = inputs.pop(0)
+    octets = inputs.pop(0).split(".")
+
+    short = 0
+    long_int = 0
+
+    if len(octets) != 4:
+        logger.error("Please provide the subnet mask in the form A.B.C.D")
+        return
+
+    for i in range(len(octets)):
+        try:
+            octets[i] = int(octets[i])
+        except Exception as e:
+            logger.error(f"Failed to convert octet: `{octets[i]}` to integer: {e}")
+            exit(1)
+
+        if octets[i] < 0 or octets[i] > 255:
+            logger.error(f"Octets must be in the range 0 ~ 255")
+            exit(1)
+
+        long_int = long_int | (octets[i] << ((4 - i-1)*8))
+
+    logger.info(f"/{bin(long_int).count('1')}")
 
 class Subcommand:
     def __init__(self, name: str, inputs: List[str], description: str, func, param_count: ParamCount):
@@ -218,7 +240,7 @@ subcommands = {
     "subnet_count": Subcommand("subnet_count", ["base_subnet_mask", "target_subnet_mask"], "Calculates number of subnets given short-hand base subnet mask and target subnet mask.", subnet_count, ParamCount(ParamCountType.EXACT, 2)),
     "test_atleast": Subcommand("test_atleast", ["arg1", "arg2"], "For testing the ParamCount.ATLEAST parsing.", None, ParamCount(ParamCountType.ATLEAST, 2)),
     "subnet_mask_short_to_long": Subcommand("subnet_mask_short_to_long", [ "subnet_mask_short" ], "Convert short form (CIDR) of a subnet mask to the long form.", subnet_mask_short_to_long, ParamCount(ParamCountType.EXACT, 1)), "help": Subcommand("help", [], "Help.", hhelp, ParamCount(ParamCountType.ATLEAST, 0)),
-    "subnet_mask_long_to_short": Subcommand("subnet_mask_long_to_short", [ "subnet_mask_long" ], "Convert long form of a subnet mask to the short form (CIDR).", subnet_mask_short_to_long, ParamCount(ParamCountType.EXACT, 1)), "help": Subcommand("help", [], "Help.", hhelp, ParamCount(ParamCountType.ATLEAST, 0)),
+    "subnet_mask_long_to_short": Subcommand("subnet_mask_long_to_short", [ "subnet_mask_long" ], "Convert long form of a subnet mask to the short form (CIDR).", subnet_mask_long_to_short, ParamCount(ParamCountType.EXACT, 1)), "help": Subcommand("help", [], "Help.", hhelp, ParamCount(ParamCountType.ATLEAST, 0)),
 }
 
 def usage(program: str):
