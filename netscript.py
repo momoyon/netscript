@@ -223,7 +223,7 @@ def subnet_mask_short_to_long(inputs):
     subnet_mask_long = 0
     subnet_mask_short = v
 
-    for i in range(subnet_mask_short):
+    for i in range(subnet_mask_short+1):
         subnet_mask_long = subnet_mask_long | (1 << (32 - i))
 
     l = subnet_mask_long
@@ -326,7 +326,7 @@ def list_subnets(inputs):
     # logger.info(f"{subnets=}")
     logger.info(f"{len(subnets)} Subnet(s):")
     for s in subnets:
-        logger.info(f"- NID: {s['network_id']}, Hosts: {s['range'][0]} ~ {s['range'][1]}, BID: {s['broadcast_id']}")
+        logger.info(f"{s['network_id']}/{target_subnet_mask} - NID: {s['network_id']}, Hosts: {s['range'][0]} ~ {s['range'][1]}, BID: {s['broadcast_id']}")
                 
 
 class Subcommand:
